@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jam, Stopwatch, Alarm + Cuaca</title>
+    <title>Jam, Stopwatch, Alarm</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;700&display=swap"
       rel="stylesheet"
@@ -36,10 +36,44 @@
         margin: 20px 0;
         color: #28a745;
       }
-      .weather {
-        margin: 10px 0 20px;
-        font-size: 18px;
+      .date-display {
+        font-size: 24px;
+        margin: 10px 0;
         color: #ffdf91;
+        transition: opacity 0.5s ease; /* Animasi transisi */
+      }
+      .clock {
+        position: relative;
+        width: 200px;
+        height: 200px;
+        border: 10px solid #fff; /* Border putih */
+        border-radius: 50%;
+        margin: 20px auto;
+        background: black; /* Latar belakang jam hitam */
+      }
+      .hand {
+        position: absolute;
+        background: #fff; /* Jarum putih */
+        transform-origin: bottom;
+        bottom: 50%;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .hour {
+        width: 6px;
+        height: 50px;
+        z-index: 3;
+      }
+      .minute {
+        width: 4px;
+        height: 70px;
+        z-index: 2;
+      }
+      .second {
+        width: 2px;
+        height: 90px;
+        background: red; /* Jarum detik merah */
+        z-index: 1;
       }
       button {
         background-color: #28a745;
@@ -76,8 +110,14 @@
     <div class="container">
       <h1>Jam, Stopwatch, dan Alarm</h1>
 
+      <div class="date-display" id="dateDisplay"></div>
       <div class="time-display" id="clock">00:00:00</div>
-      <div class="weather" id="weatherInfo">Memuat cuaca Batam...</div>
+
+      <div class="clock" id="clockContainer">
+        <div class="hand hour" id="hourHand"></div>
+        <div class="hand minute" id="minuteHand"></div>
+        <div class="hand second" id="secondHand"></div>
+      </div>
 
       <label for="timeFormat">Format Jam:</label>
       <select id="timeFormat">
@@ -126,10 +166,44 @@
         )}:${minutes}:${seconds}`;
         document.getElementById("clock").textContent = formattedTime;
 
+        // Update jam analog
+        const hourDeg = (hours % 12) * 30 + (minutes / 60) * 30; // 360/12 = 30 degrees per hour
+        const minuteDeg = minutes * 6 + (seconds / 60) * 6; // 360/60 = 6 degrees per minute
+        const secondDeg = seconds * 6; // 360/60 = 6 degrees per second
+
+        document.getElementById(
+          "hourHand"
+        ).style.transform = `translateX(-50%) rotate(${hourDeg}deg)`;
+        document.getElementById(
+          "minuteHand"
+        ).style.transform = `translateX(-50%) rotate(${minuteDeg}deg)`;
+        document.getElementById(
+          "secondHand"
+        ).style.transform = `translateX(-50%) rotate(${secondDeg}deg)`;
+
         currentTime.setSeconds(currentTime.getSeconds() + 1);
       }
 
-      setInterval(updateClock, 1000);
+      function updateDate() {
+        const now = new Date();
+        const options = {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        };
+        document.getElementById("dateDisplay").textContent =
+          now.toLocaleDateString(undefined, options);
+        document.getElementById("dateDisplay").style.opacity = 0; // Mulai dengan transparan
+        setTimeout(() => {
+          document.getElementById("dateDisplay").style.opacity = 1; // Tampilkan dengan animasi
+        }, 100);
+      }
+
+      setInterval(() => {
+        updateClock();
+        updateDate();
+      }, 1000);
 
       document.getElementById("setClock").addEventListener("click", () => {
         const setTime = document.getElementById("setTime").value;
@@ -201,27 +275,6 @@
           }
         }
       });
-
-      // ✅ CUACA: Ambil info cuaca Batam
-      const apiKey = "047d5a2195c236f0e1a1fc57362db7f7";
-      const city = "Batam";
-
-      fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=id`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          const temp = data.main.temp.toFixed(1);
-          const description = data.weather[0].description;
-          document.getElementById(
-            "weatherInfo"
-          ).textContent = `Cuaca: ${description}, ${temp}°C`;
-        })
-        .catch((error) => {
-          document.getElementById("weatherInfo").textContent =
-            "Gagal memuat cuaca.";
-          console.error("Gagal mengambil data cuaca:", error);
-        });
     </script>
   </body>
 </html>
