@@ -3,134 +3,184 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Love Web</title>
+    <title>Jam, Stopwatch, dan Alarm</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       body {
-        text-align: center;
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-image: url("https://i.ibb.co/SKdDLV4/love-bg.jpg");
+        font-family: "Roboto", sans-serif;
+        background-image: url("https://png.pngtree.com/background/20230526/original/pngtree-futuristic-timetable-watch-rotating-in-black-and-white-picture-image_2747460.jpg"); /* Gambar latar belakang */
         background-size: cover;
         background-position: center;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
         color: white;
-        padding-top: 100px;
       }
-
       h1 {
-        text-shadow: 2px 2px 4px #000;
+        color: #fff;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
       }
-
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: rgba(0, 0, 0, 0.7); /* Latar belakang transparan */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      }
+      .time-display {
+        font-size: 48px;
+        margin: 20px 0;
+        color: #28a745;
+      }
       button {
-        padding: 12px 24px;
-        font-size: 18px;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        background-color: #ff4da6;
+        background-color: #28a745;
         color: white;
-        margin: 10px;
-        transition: 0.3s;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
       }
-
       button:hover {
-        background-color: #ff1a75;
-        transform: scale(1.05);
+        background-color: #218838;
       }
-
-      #teks,
-      #teks2,
-      #btn2 {
-        display: none;
-        margin-top: 20px;
+      input[type="time"],
+      select {
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .stopwatch {
         font-size: 24px;
-        text-shadow: 2px 2px 4px #000;
+        margin: 20px 0;
       }
-
-      #fireworks {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        pointer-events: none;
-        z-index: 9999;
+      .footer {
+        margin-top: 20px;
+        font-size: 18px;
+        color: #fff;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
       }
     </style>
   </head>
   <body>
-    <h1>Selamat Datang Cinta 💖</h1>
-    <button onclick="showLove()">Tekan tombol ini</button>
+    <div class="container">
+      <h1>Jam, Stopwatch, dan Alarm</h1>
 
-    <p id="teks">I love you ❤️</p>
-    <button id="btn2" onclick="showMore()">Tekan lagi bb</button>
-    <p id="teks2">I love you more bb 💕</p>
+      <div class="time-display" id="clock">00:00:00</div>
 
-    <canvas id="fireworks"></canvas>
+      <label for="timeFormat">Format Jam:</label>
+      <select id="timeFormat">
+        <option value="24">24 Jam</option>
+        <option value="12">12 Jam</option>
+      </select>
 
-    <!-- Musik romantis otomatis -->
-    <audio id="romanticMusic" autoplay loop>
-      <source
-        src="https://www.fesliyanstudios.com/play-mp3/387"
-        type="audio/mp3"
-      />
-      Browser kamu tidak mendukung audio.
-    </audio>
+      <h2>Stopwatch</h2>
+      <div class="stopwatch" id="stopwatch">00:00:00</div>
+      <button id="startStopwatch">Mulai</button>
+      <button id="stopStopwatch">Hentikan</button>
+      <button id="resetStopwatch">Reset</button>
+
+      <h2>Alarm</h2>
+      <input type="time" id="alarmTime" />
+      <button id="setAlarm">Set Alarm</button>
+      <div id="alarmMessage"></div>
+
+      <div class="footer">by_fhizh_10</div>
+    </div>
 
     <script>
-      function showLove() {
-        document.getElementById("teks").style.display = "block";
-        document.getElementById("btn2").style.display = "inline-block";
-      }
+      // Jam
+      function updateClock() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        const seconds = String(now.getSeconds()).padStart(2, "0");
+        const format = document.getElementById("timeFormat").value;
 
-      function showMore() {
-        document.getElementById("teks2").style.display = "block";
-        startFireworks();
-      }
-
-      // FIREWORKS
-      const canvas = document.getElementById("fireworks");
-      const ctx = canvas.getContext("2d");
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      const particles = [];
-
-      function createFirework(x, y) {
-        const colors = ["#ff4da6", "#ffff66", "#66ffcc", "#66ccff"];
-        for (let i = 0; i < 100; i++) {
-          particles.push({
-            x: x,
-            y: y,
-            radius: Math.random() * 3,
-            color: colors[Math.floor(Math.random() * colors.length)],
-            velocityX: (Math.random() - 0.5) * 5,
-            velocityY: (Math.random() - 0.5) * 5,
-            alpha: 1,
-          });
+        let displayHours = hours;
+        if (format === "12") {
+          displayHours = hours % 12 || 12; // Convert to 12-hour format
         }
+        const formattedTime = `${String(displayHours).padStart(
+          2,
+          "0"
+        )}:${minutes}:${seconds}`;
+        document.getElementById("clock").textContent = formattedTime;
+      }
+      setInterval(updateClock, 1000);
+
+      // Stopwatch
+      let stopwatchInterval;
+      let stopwatchTime = 0;
+
+      function updateStopwatch() {
+        stopwatchTime++;
+        const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, "0");
+        const minutes = String(
+          Math.floor((stopwatchTime % 3600) / 60)
+        ).padStart(2, "0");
+        const seconds = String(stopwatchTime % 60).padStart(2, "0");
+        document.getElementById(
+          "stopwatch"
+        ).textContent = `${hours}:${minutes}:${seconds}`;
       }
 
-      function updateParticles() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach((p, index) => {
-          p.x += p.velocityX;
-          p.y += p.velocityY;
-          p.alpha -= 0.01;
-          if (p.alpha <= 0) particles.splice(index, 1);
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = p.color;
-          ctx.globalAlpha = p.alpha;
-          ctx.fill();
-          ctx.globalAlpha = 1;
+      document
+        .getElementById("startStopwatch")
+        .addEventListener("click", () => {
+          if (!stopwatchInterval) {
+            stopwatchInterval = setInterval(updateStopwatch, 1000);
+          }
         });
-        requestAnimationFrame(updateParticles);
-      }
 
-      function startFireworks() {
-        createFirework(window.innerWidth / 2, window.innerHeight / 2);
-        updateParticles();
-      }
+      document.getElementById("stopStopwatch").addEventListener("click", () => {
+        clearInterval(stopwatchInterval);
+        stopwatchInterval = null;
+      });
+
+      document
+        .getElementById("resetStopwatch")
+        .addEventListener("click", () => {
+          clearInterval(stopwatchInterval);
+          stopwatchInterval = null;
+          stopwatchTime = 0;
+          document.getElementById("stopwatch").textContent = "00:00:00";
+        });
+
+      // Alarm
+      let alarmTimeout;
+
+      document.getElementById("setAlarm").addEventListener("click", () => {
+        const alarmTime = document.getElementById("alarmTime").value;
+        if (alarmTime) {
+          const [hours, minutes] = alarmTime.split(":");
+          const now = new Date();
+          const alarmDate = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+            hours,
+            minutes,
+            0
+          );
+          const timeToAlarm = alarmDate.getTime() - now.getTime();
+
+          if (timeToAlarm >= 0) {
+            alarmTimeout = setTimeout(() => {
+              alert("Alarm berbunyi!");
+              document.getElementById("alarmMessage").textContent =
+                "Alarm berbunyi!";
+            }, timeToAlarm);
+          } else {
+            alert("Waktu alarm sudah berlalu!");
+          }
+        }
+      });
     </script>
   </body>
 </html>
