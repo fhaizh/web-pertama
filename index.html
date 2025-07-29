@@ -79,6 +79,10 @@
         <option value="12">12 Jam</option>
       </select>
 
+      <label for="setTime">Set Jam:</label>
+      <input type="time" id="setTime" />
+      <button id="setClock">Atur Jam</button>
+
       <h2>Stopwatch</h2>
       <div class="stopwatch" id="stopwatch">00:00:00</div>
       <button id="startStopwatch">Mulai</button>
@@ -94,13 +98,16 @@
     </div>
 
     <script>
-      // Jam
+      let currentTime = new Date(); // Menyimpan waktu saat ini
+      let stopwatchInterval;
+      let stopwatchTime = 0;
+
+      // Fungsi untuk memperbarui jam
       function updateClock() {
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = String(now.getMinutes()).padStart(2, "0");
-        const seconds = String(now.getSeconds()).padStart(2, "0");
         const format = document.getElementById("timeFormat").value;
+        const hours = currentTime.getHours();
+        const minutes = String(currentTime.getMinutes()).padStart(2, "0");
+        const seconds = String(currentTime.getSeconds()).padStart(2, "0");
 
         let displayHours = hours;
         if (format === "12") {
@@ -111,13 +118,26 @@
           "0"
         )}:${minutes}:${seconds}`;
         document.getElementById("clock").textContent = formattedTime;
+
+        // Tambahkan satu detik ke currentTime
+        currentTime.setSeconds(currentTime.getSeconds() + 1);
       }
+
+      // Memperbarui jam setiap detik
       setInterval(updateClock, 1000);
 
-      // Stopwatch
-      let stopwatchInterval;
-      let stopwatchTime = 0;
+      // Mengatur jam sesuai input pengguna
+      document.getElementById("setClock").addEventListener("click", () => {
+        const setTime = document.getElementById("setTime").value;
+        if (setTime) {
+          const [hours, minutes] = setTime.split(":");
+          currentTime.setHours(hours);
+          currentTime.setMinutes(minutes);
+          currentTime.setSeconds(0); // Reset detik
+        }
+      });
 
+      // Stopwatch
       function updateStopwatch() {
         stopwatchTime++;
         const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, "0");
