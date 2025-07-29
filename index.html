@@ -11,7 +11,7 @@
     <style>
       body {
         font-family: "Roboto", sans-serif;
-        background-image: url("https://png.pngtree.com/background/20230526/original/pngtree-futuristic-timetable-watch-rotating-in-black-and-white-picture-image_2747460.jpg"); /* Gambar latar belakang */
+        background-image: url("https://png.pngtree.com/background/20230526/original/pngtree-futuristic-timetable-watch-rotating-in-black-and-white-picture-image_2747460.jpg");
         background-size: cover;
         background-position: center;
         margin: 0;
@@ -21,7 +21,7 @@
       }
       h1 {
         color: #fff;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.7);
       }
       .container {
         max-width: 600px;
@@ -29,7 +29,7 @@
         background: rgba(0, 0, 0, 0.7); /* Latar belakang transparan */
         padding: 20px;
         border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
       }
       .time-display {
         font-size: 48px;
@@ -63,7 +63,41 @@
         margin-top: 20px;
         font-size: 18px;
         color: #fff;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
+      }
+      /* Jam Bulat */
+      .clock {
+        position: relative;
+        width: 200px;
+        height: 200px;
+        border: 10px solid #fff; /* Border putih */
+        border-radius: 50%;
+        margin: 20px auto;
+        background: black; /* Latar belakang jam hitam */
+      }
+      .hand {
+        position: absolute;
+        background: #fff; /* Jarum putih */
+        transform-origin: bottom;
+        bottom: 50%;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .hour {
+        width: 6px;
+        height: 50px;
+        z-index: 3;
+      }
+      .minute {
+        width: 4px;
+        height: 70px;
+        z-index: 2;
+      }
+      .second {
+        width: 2px;
+        height: 90px;
+        background: red; /* Jarum detik merah */
+        z-index: 1;
       }
     </style>
   </head>
@@ -71,7 +105,13 @@
     <div class="container">
       <h1>Jam, Stopwatch, dan Alarm</h1>
 
-      <div class="time-display" id="clock">00:00:00</div>
+      <div class="clock" id="clockContainer">
+        <div class="hand hour" id="hourHand"></div>
+        <div class="hand minute" id="minuteHand"></div>
+        <div class="hand second" id="secondHand"></div>
+      </div>
+
+      <div class="time-display" id="digitalClock">00:00:00</div>
 
       <label for="timeFormat">Format Jam:</label>
       <select id="timeFormat">
@@ -94,50 +134,62 @@
       <button id="setAlarm">Set Alarm</button>
       <div id="alarmMessage"></div>
 
+      <audio
+        id="alarmSound"
+        src="https://www.soundjay.com/button/beep-07.wav"
+        preload="auto"
+      ></audio>
+
       <div class="footer">by_fhizh_10</div>
     </div>
 
     <script>
-      let currentTime = new Date(); // Menyimpan waktu saat ini
+      let currentTime = new Date();
       let stopwatchInterval;
       let stopwatchTime = 0;
 
-      // Fungsi untuk memperbarui jam
       function updateClock() {
         const format = document.getElementById("timeFormat").value;
         const hours = currentTime.getHours();
-        const minutes = String(currentTime.getMinutes()).padStart(2, "0");
-        const seconds = String(currentTime.getSeconds()).padStart(2, "0");
+        const minutes = currentTime.getMinutes();
+        const seconds = currentTime.getSeconds();
 
-        let displayHours = hours;
-        if (format === "12") {
-          displayHours = hours % 12 || 12; // Convert to 12-hour format
-        }
-        const formattedTime = `${String(displayHours).padStart(
-          2,
-          "0"
-        )}:${minutes}:${seconds}`;
-        document.getElementById("clock").textContent = formattedTime;
+        // Update digital clock
+        const formattedTime = `${String(hours).padStart(2, "0")}:${String(
+          minutes
+        ).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+        document.getElementById("digitalClock").textContent = formattedTime;
 
-        // Tambahkan satu detik ke currentTime
+        // Update analog clock hands
+        const hourDeg = (hours % 12) * 30 + (minutes / 60) * 30; // 360/12 = 30 degrees per hour
+        const minuteDeg = minutes * 6 + (seconds / 60) * 6; // 360/60 = 6 degrees per minute
+        const secondDeg = seconds * 6; // 360/60 = 6 degrees per second
+
+        document.getElementById(
+          "hourHand"
+        ).style.transform = `translateX(-50%) rotate(${hourDeg}deg)`;
+        document.getElementById(
+          "minuteHand"
+        ).style.transform = `translateX(-50%) rotate(${minuteDeg}deg)`;
+        document.getElementById(
+          "secondHand"
+        ).style.transform = `translateX(-50%) rotate(${secondDeg}deg)`;
+
         currentTime.setSeconds(currentTime.getSeconds() + 1);
       }
 
-      // Memperbarui jam setiap detik
       setInterval(updateClock, 1000);
 
-      // Mengatur jam sesuai input pengguna
       document.getElementById("setClock").addEventListener("click", () => {
         const setTime = document.getElementById("setTime").value;
         if (setTime) {
           const [hours, minutes] = setTime.split(":");
           currentTime.setHours(hours);
           currentTime.setMinutes(minutes);
-          currentTime.setSeconds(0); // Reset detik
+          currentTime.setSeconds(0);
         }
       });
 
-      // Stopwatch
       function updateStopwatch() {
         stopwatchTime++;
         const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, "0");
@@ -172,7 +224,6 @@
           document.getElementById("stopwatch").textContent = "00:00:00";
         });
 
-      // Alarm
       let alarmTimeout;
 
       document.getElementById("setAlarm").addEventListener("click", () => {
@@ -192,6 +243,8 @@
 
           if (timeToAlarm >= 0) {
             alarmTimeout = setTimeout(() => {
+              const alarmSound = document.getElementById("alarmSound");
+              alarmSound.play(); // Memutar suara alarm
               alert("Alarm berbunyi!");
               document.getElementById("alarmMessage").textContent =
                 "Alarm berbunyi!";
